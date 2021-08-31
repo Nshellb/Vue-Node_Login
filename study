@@ -101,11 +101,11 @@ module.exports = {
       ~
 
     proxyTable: {
-      'api': {
+      '/api': {
         target: 'http://localhost:3000/api',
-        chargeOrigin: true,
+        changeOrigin: true,
         pathRewrite: {
-          '^/api': ''
+            '^/api': ''
         }
       }
     },
@@ -132,7 +132,7 @@ Vue.proxytype.$http = axios // vue 컴포넌트에서 this.$http로 요청할 �
 </template>
 
 <script>
-export default{
+export default {
     data() {
         return {
             user: null,
@@ -147,12 +147,10 @@ export default{
             .catch((err) => {
                 console.error(err);
             });
-    }
-}
+    }}
 </script>
 
-<style>
-</style>
+<style></style>
 
 현재 접속중인 계정의 id 와 pw, 이름을 확인하는 페이지이다.
 
@@ -160,7 +158,7 @@ Q. 받아오는 데이터가 key: value 3쌍인데 null 로 초기화하네...? 
 
 5) router/index.js 파일을 열고 라우터를 설정한다.
 
-import IndexPage from '@/components/IndexPage'
+import IndexPage from '@/components/IndexPage.vue'
 
 ~
 
@@ -172,7 +170,7 @@ export default new Router({
       name: 'IndexPage',
       component: IndexPage
     }
-  ],
+  ]
 })
 
 접속 경로에 따른 출력(client에게 보내주는) 페이지를 설정한다.
@@ -187,8 +185,9 @@ config\index.js 에서 아래 코드로 수정.
 useEslint: false,
 *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 
+
 2-2. backend 작업
-1) backend 프로젝트에 data 폴더와 user.json 파일을 만들고 테스트용 유저 데이터를 입력한다.
+1) backend 프로젝트에 data 폴더와 users.json 파일을 만들고 테스트용 유저 데이터를 입력한다.
 [
     {
         "id": "james",
@@ -213,7 +212,7 @@ key: vlaue 쌍의 데이터들이다.
 const express = require('express');
 const router = express.Router();
 
-const users = require('../data/user.json');
+const users = require('../data/users.json');
 
 router.get('/', function(req, res, next) {
     res.json({ user: users[0] });
@@ -234,6 +233,7 @@ app.use('/api/login', loginRouter);
 npm start
 
 5) localhost:3000 에 접속하면 frontend 와 backend 가 작동하는것을 확인할 수 있다.
+
 
 2-3. frontend 테스트
 1) frontend 작업중에는 frontend 를 npm run dev 로 실행

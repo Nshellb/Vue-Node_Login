@@ -86,3 +86,162 @@ npm start
 
 -> 최종적으로는 frontend 프로젝트를 빌드해서 실행가능한 상태로 만들고
 backend 에서 express 로 배포한다.
+
+
+
+
+
+
+2. API 데이터 호출 테스트
+2-1. frontend 작업
+1) frontend 프로젝트를 열고 config/index.js 파일을 열고 proxyTable 을 설정한다.
+module.exports = {
+  dev: {
+      
+      ~
+
+    proxyTable: {
+      '/api': {
+        target: 'http://localhost:3000/api',
+        changeOrigin: true,
+        pathRewrite: {
+            '^/api': ''
+        }
+      }
+    },
+
+http 통신을 간편히 하기위한 작업. 
+frontend 에서 /api 주소로 요청 발생시 'http://localhost:3000/api' 로 요청을 보낸다.
+이 설정이 없다면 http 요청시마다 'http://localhost:3000/api' 주소를 일일이 넣어야 한다.
+
+2) http 통신을 위한 axios 모듈을 설치한다.
+npm i axios
+
+3) axios 를 전역에서 사용할 수 있도록 src/main.js 파일을 열고 코드를 추가한다.
+import axios from 'axios'
+Vue.proxytype.$http = axios // vue 컴포넌트에서 this.$http로 요청할 수 있게한다.
+
+4) componets/IndexPage.vue 파일을 만들고 코드를 작성한다.
+<template>
+    <div v-if="user">
+        <h1>접속한 유저</h1>
+        <p>아이디 : {{ user.id }} </p>
+        <p>비밀번호 : {{ user.password }} </p>
+        <p>이름 : {{ user.name }} </p>
+    </div>
+</template>
+
+<script>
+export default {
+    data() {
+        return {
+            user: null,
+        };
+    },
+    created() {
+        this.$http.get('/api/login')
+            .then((res) => {
+                const user = res.data.user;
+                if (user) this.user = user;
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+    }}
+</script>
+
+<style></style>
+
+현재 접속중인 계정의 id 와 pw, 이름을 확인하는 페이지이다.
+
+Q. 받아오는 데이터가 key: value 3쌍인데 null 로 초기화하네...? ([] 아닌가...?)
+
+5) router/index.js 파일을 열고 라우터를 설정한다.
+
+import IndexPage from '@/components/IndexPage.vue'
+
+~
+
+export default new Router({
+  mode: 'history',
+  routes: [
+    {
+      path: '/',
+      name: 'IndexPage',
+      component: IndexPage
+    }
+  ]
+})
+
+접속 경로에 따른 출력(client에게 보내주는) 페이지를 설정한다.
+vue-router 가 설치 되어있어야한다.
+
+6) 터미널에서 빌드하여 frontend 작업을 완료한다.
+npm run build
+
+*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+[ Vue Error ] Eslint 배포 오류 : Use //eslint-disable-next-line to ignore the next line.
+config\index.js 에서 아래 코드로 수정.
+useEslint: false,
+*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+
+2-2. backend 작업
+1) backend 프로젝트에 data 폴더와 users.json 파일을 만들고 테스트용 유저 데이터를 입력한다.
+[
+    {
+        "id": "james",
+        "password": "1234",
+        "name": "제임스"
+    },
+    {
+        "id": "donald",
+        "password": "0000",
+        "name": "도널드"
+    },
+    {
+        "id": "john",
+        "password": "9999",
+        "name": "요한"
+    }
+]
+
+key: vlaue 쌍의 데이터들이다.
+
+2) routes 폴더에 login.js 파일을 만들고 코드를 작성한다.
+const express = require('express');
+const router = express.Router();
+
+const users = require('../data/users.json');
+
+router.get('/', function(req, res, next) {
+    res.json({ user: users[0] });
+});
+
+module.exports = router;
+
+3) app.js 파일에 login 라우터를 추가한다.
+// var usersRouter = require('./routes/users');
+var loginRouter = require('./routes/login');
+
+~
+
+// app.use('/users', usersRouter);
+app.use('/api/login', loginRouter);
+
+4) 터미널에서 서버를 실행한다.
+npm start
+
+5) localhost:3000 에 접속하면 frontend 와 backend 가 작동하는것을 확인할 수 있다.
+
+
+2-3. frontend 테스트
+1) frontend 작업중에는 frontend 를 npm run dev 로 실행
+(frontend 코드 수정시 수정된 내용이 자동으로 적용된다.)
+
+2) localhost:8080 으로 접속하여 테스트
+
+3) backend 작업중에는 frontend 를 npm start 로 실행
+(디버그 모드 F5 로도 가능하다.)
+
+4) localhost:3000 으로 접속하여 프로젝트를 최종확인
