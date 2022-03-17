@@ -1,3 +1,10 @@
+Vue - Express(node) 연동을 위한 개발이다.
+
+Front - Vue.js
+Back - Node.js
+
+이하 개발노트
+
 Vue - Express(node) 연동
 https://mrw0119.tistory.com/136
 
